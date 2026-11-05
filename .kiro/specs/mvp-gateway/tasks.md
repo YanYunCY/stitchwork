@@ -4,13 +4,13 @@
   - `package.json` (ESM, Node ≥22.18, scripts `test`, `typecheck`), `tsconfig.json` (strict, noEmit, erasable syntax only), `src/types.ts`.
   - _Requirements: 1.3_
 
-- [ ] 2. Agent adapters
-  - [ ] 2.1 Shared `estimateUsage` helper and `AgentAdapter` interface. _Req 1.4_
-  - [ ] 2.2 Claude adapter: args + JSON usage parsing. _Req 1.1, 1.2_
-  - [ ] 2.3 Gemini adapter: args + JSON stats parsing. _Req 1.1, 1.2_
-  - [ ] 2.4 Codex adapter: args + `tokens used` parsing. _Req 1.1, 1.2_
-  - [ ] 2.5 OpenCode adapter: args + estimate. _Req 1.1, 1.2_
-  - [ ] 2.6 Registry and `extraArgs` support; tests for each adapter. _Req 1.8_
+- [x] 2. Agent adapters
+  - [x] 2.1 Shared `estimateUsage` helper and `AgentAdapter` interface. _Req 1.4_
+  - [x] 2.2 Claude adapter: args + JSON usage parsing. _Req 1.1, 1.2_
+  - [x] 2.3 Gemini adapter: args + JSON stats parsing. _Req 1.1, 1.2_
+  - [x] 2.4 Codex adapter: args + `tokens used` parsing. _Req 1.1, 1.2_
+  - [x] 2.5 OpenCode adapter: args + estimate. _Req 1.1, 1.2_
+  - [x] 2.6 Registry and `extraArgs` support; tests for each adapter. _Req 1.8_
 
 - [ ] 3. Process runner
   - Spawn with injectable `spawn`, timeout kill, ENOENT detection, output caps; tests with a fake child process. _Req 1.5, 1.6, 1.7_
