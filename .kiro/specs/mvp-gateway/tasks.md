@@ -15,10 +15,10 @@
 - [x] 3. Process runner
   - Spawn with injectable `spawn`, timeout kill, ENOENT detection, output caps; tests with a fake child process. _Req 1.5, 1.6, 1.7_
 
-- [ ] 4. Quota ledger
-  - [ ] 4.1 Rolling-window snapshot math with injectable `now` and store. _Req 3.4, 3.6, 3.7_
-  - [ ] 4.2 JSONL file store; malformed-line tolerance. _Req 3.1, 3.2, 3.3, 3.8_
-  - [ ] 4.3 Property tests P1–P3 with fast-check. _Req 3.4, 3.5_
+- [x] 4. Quota ledger
+  - [x] 4.1 Rolling-window snapshot math with injectable `now` and store. _Req 3.4, 3.6, 3.7_
+  - [x] 4.2 JSONL file store; malformed-line tolerance. _Req 3.1, 3.2, 3.3, 3.8_
+  - [x] 4.3 Property tests P1–P3 with fast-check. _Req 3.4, 3.5_
 
 - [ ] 5. Router
   - Explicit and auto selection, skip reasons, property P4. _Req 4.1–4.5, 3.5_
