@@ -1,6 +1,6 @@
 # Implementation plan: MVP gateway
 
-- [ ] 1. Project scaffold
+- [x] 1. Project scaffold
   - `package.json` (ESM, Node ≥22.18, scripts `test`, `typecheck`), `tsconfig.json` (strict, noEmit, erasable syntax only), `src/types.ts`.
   - _Requirements: 1.3_
 
