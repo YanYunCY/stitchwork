@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "New agent adapter checklist",
+  "description": "When a new adapter file is created, make sure it is registered, tested, documented, and that the core never branches on its id.",
+  "version": "1",
+  "when": {
+    "type": "fileCreated",
+    "patterns": ["src/adapters/*.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A new agent adapter was created. Check and complete: (1) it implements AgentAdapter from src/adapters/types.ts; (2) it is registered in src/adapters/index.ts and the AgentId union in src/types.ts; (3) test/adapters.test.ts covers buildArgs, usage parsing, and the estimate fallback; (4) the agent table in README.md and .kiro/steering/tech.md lists its command; (5) no file outside src/adapters/ checks for this agent id. Report what you changed."
+  }
+}

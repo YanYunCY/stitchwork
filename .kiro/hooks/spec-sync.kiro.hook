@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Keep spec and code in sync",
+  "description": "When requirements.md changes, check design.md and tasks.md still cover every acceptance criterion.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [".kiro/specs/**/requirements.md"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "requirements.md changed. List any acceptance criterion id that is not referenced by a task in tasks.md or not addressed in design.md, then propose the minimal edits to cover it. Keep EARS wording."
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "stitchwork": {
+      "command": "node",
+      "args": ["src/cli.ts", "serve"],
+      "disabled": false,
+      "autoApprove": ["agents_list", "quota_status", "skills_list"]
+    }
+  }
+}

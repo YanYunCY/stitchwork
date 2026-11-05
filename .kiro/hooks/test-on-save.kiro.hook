@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Run tests on source save",
+  "description": "When a TypeScript file under src/ or test/ is saved, run the type checker and the test suite, and fix any failure before continuing.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/**/*.ts", "test/**/*.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A source file was just saved. Run `npm run typecheck` and `npm test`. If anything fails, explain the root cause in one sentence and fix it while respecting .kiro/steering/tech.md (erasable TypeScript only, .ts import extensions, no runtime dependencies). Do not mark any task in tasks.md done while tests are red."
+  }
+}
