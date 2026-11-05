@@ -1,0 +1,5 @@
+#!/usr/bin/env node
+// Demo stand-in for Gemini CLI: mimics `gemini -p <prompt> --output-format json`.
+const prompt = process.argv[process.argv.indexOf('-p') + 1] ?? '';
+const p = Math.ceil(prompt.length / 4) + 400;
+console.log(JSON.stringify({ response: `✨ [gemini] ${prompt.slice(0, 80)}`, stats: { models: { 'gemini-2.5-pro': { tokens: { prompt: p, candidates: 180, total: p + 180 } } } } }));

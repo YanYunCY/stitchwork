@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// Demo stand-in for Claude Code: mimics `claude -p <prompt> --output-format json`.
+const prompt = process.argv[process.argv.indexOf('-p') + 1] ?? '';
+console.log(JSON.stringify({ type: 'result', result: `🧠 [claude] ${prompt.slice(0, 80)}`, usage: { input_tokens: Math.ceil(prompt.length / 4) + 900, output_tokens: 240 } }));

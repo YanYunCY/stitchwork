@@ -65,11 +65,27 @@ Use it from any MCP client, e.g. Kiro's `.kiro/settings/mcp.json`:
 }
 ```
 
+### Try it without any subscriptions
+
+`examples/fake-agents/` contains tiny stand-ins that print output in each real CLI's format. With the demo config's small limits you can watch Claude run dry and the router hand work to another agent:
+
+```bash
+export PATH="$PWD/examples/fake-agents:$PATH"
+node src/cli.ts --config examples/demo.config.json run --agent claude "Refactor the ledger"   # x2
+node src/cli.ts --config examples/demo.config.json run --agent claude "third"   # refused: quota
+node src/cli.ts --config examples/demo.config.json run --skill code-review "diff --git a/x b/x"   # routed to codex
+node src/cli.ts --config examples/demo.config.json quota
+```
+
 ### Configuration
 
 Optional `stitchwork.config.json` in the working directory (see [`stitchwork.config.example.json`](./stitchwork.config.example.json)): per-agent `enabled`, `binary`, `extraArgs`, `limits.tokens`, `limits.requests`, plus `windowMinutes`, `ledgerPath` and `skillsDir`.
 
 Secrets are **never** stored in config. Each CLI keeps its own login; any API keys (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, …) are read only from the environment and passed through to the child process.
+
+### Built with Kiro
+
+See [`docs/KIRO_USAGE.md`](./docs/KIRO_USAGE.md), [`docs/MILESTONES.md`](./docs/MILESTONES.md) and the spec in [`.kiro/specs/mvp-gateway`](./.kiro/specs/mvp-gateway).
 
 ### License
 
@@ -112,6 +128,8 @@ node src/cli.ts run --agent auto "用三点解释 src/quota/ledger.ts"
 ```
 
 在 Kiro 的 `.kiro/settings/mcp.json` 里接入方式见上方英文部分的 JSON 示例。
+
+没有任何订阅也能试：把 `examples/fake-agents` 加进 `PATH`，配合 `examples/demo.config.json` 的小额度，就能看到 Claude 额度用完后被拒绝、任务自动转给 Codex。命令见英文部分。
 
 ### 配置与密钥
 

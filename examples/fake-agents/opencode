@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+// Demo stand-in for OpenCode: mimics `opencode run <prompt>`.
+const prompt = process.argv.at(-1) ?? '';
+console.log(`🧩 [opencode] ${prompt.slice(0, 80)}`);
