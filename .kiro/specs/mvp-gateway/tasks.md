@@ -29,7 +29,7 @@
 - [x] 7. Config
   - Defaults, merge, typed validation with field paths. _Req 6.1, 6.2_
 
-- [ ] 8. Gateway
+- [x] 8. Gateway
   - Wire config, adapters, runner, ledger, router, skills; record usage after each run. _Req 1.2, 3.1, 6.3, 6.4_
 
 - [ ] 9. MCP server
