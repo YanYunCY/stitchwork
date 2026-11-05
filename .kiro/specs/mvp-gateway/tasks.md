@@ -20,7 +20,7 @@
   - [x] 4.2 JSONL file store; malformed-line tolerance. _Req 3.1, 3.2, 3.3, 3.8_
   - [x] 4.3 Property tests P1–P3 with fast-check. _Req 3.4, 3.5_
 
-- [ ] 5. Router
+- [x] 5. Router
   - Explicit and auto selection, skip reasons, property P4. _Req 4.1–4.5, 3.5_
 
 - [ ] 6. Skills
