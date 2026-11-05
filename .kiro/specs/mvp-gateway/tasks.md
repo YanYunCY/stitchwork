@@ -23,7 +23,7 @@
 - [x] 5. Router
   - Explicit and auto selection, skip reasons, property P4. _Req 4.1–4.5, 3.5_
 
-- [ ] 6. Skills
+- [x] 6. Skills
   - Front matter parser, registry with warnings, `{{input}}` rendering, two built-in skills. _Req 5.1–5.6_
 
 - [ ] 7. Config
