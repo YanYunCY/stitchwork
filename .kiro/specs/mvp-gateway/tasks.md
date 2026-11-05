@@ -37,7 +37,7 @@
   - [x] 9.2 `initialize`, `ping`, `tools/list`, `tools/call` with argument validation. _Req 2.1–2.5, 2.7_
   - [x] 9.3 End-to-end test over in-memory streams with a fake agent. _Req 2.x, 3.1_
 
-- [ ] 10. CLI
+- [x] 10. CLI
   - `serve`, `agents`, `quota`, `skills`, `run`, usage/exit code 2. _Req 7.1–7.4_
 
 - [ ] 11. Milestone 2 (next spec): streaming progress notifications, web dashboard, live quota import from vendor usage endpoints.
