@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+.stitchwork/
+*.log
+.env
+.env.*
+# NOTE: never ignore /.kiro — it is required by the Kiroween rules.
