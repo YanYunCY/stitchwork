@@ -12,7 +12,7 @@
   - [x] 2.5 OpenCode adapter: args + estimate. _Req 1.1, 1.2_
   - [x] 2.6 Registry and `extraArgs` support; tests for each adapter. _Req 1.8_
 
-- [ ] 3. Process runner
+- [x] 3. Process runner
   - Spawn with injectable `spawn`, timeout kill, ENOENT detection, output caps; tests with a fake child process. _Req 1.5, 1.6, 1.7_
 
 - [ ] 4. Quota ledger
