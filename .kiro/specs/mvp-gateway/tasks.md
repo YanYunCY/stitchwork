@@ -32,10 +32,10 @@
 - [x] 8. Gateway
   - Wire config, adapters, runner, ledger, router, skills; record usage after each run. _Req 1.2, 3.1, 6.3, 6.4_
 
-- [ ] 9. MCP server
-  - [ ] 9.1 JSON-RPC line framing and error helpers. _Req 2.6, 2.8_
-  - [ ] 9.2 `initialize`, `ping`, `tools/list`, `tools/call` with argument validation. _Req 2.1–2.5, 2.7_
-  - [ ] 9.3 End-to-end test over in-memory streams with a fake agent. _Req 2.x, 3.1_
+- [x] 9. MCP server
+  - [x] 9.1 JSON-RPC line framing and error helpers. _Req 2.6, 2.8_
+  - [x] 9.2 `initialize`, `ping`, `tools/list`, `tools/call` with argument validation. _Req 2.1–2.5, 2.7_
+  - [x] 9.3 End-to-end test over in-memory streams with a fake agent. _Req 2.x, 3.1_
 
 - [ ] 10. CLI
   - `serve`, `agents`, `quota`, `skills`, `run`, usage/exit code 2. _Req 7.1–7.4_
