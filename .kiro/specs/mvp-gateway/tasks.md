@@ -26,7 +26,7 @@
 - [x] 6. Skills
   - Front matter parser, registry with warnings, `{{input}}` rendering, two built-in skills. _Req 5.1–5.6_
 
-- [ ] 7. Config
+- [x] 7. Config
   - Defaults, merge, typed validation with field paths. _Req 6.1, 6.2_
 
 - [ ] 8. Gateway
