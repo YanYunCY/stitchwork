@@ -1,6 +1,6 @@
 # Implementation plan: M2 — demo-ready gateway
 
-- [ ] 1. Rate-limit detection
+- [x] 1. Rate-limit detection
   - `src/ratelimit.ts` with `isRateLimited`; table-driven tests for each vendor phrasing. _Req 8.1_
 
 - [ ] 2. Ledger cooldown
