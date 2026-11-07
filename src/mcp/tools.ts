@@ -1,4 +1,4 @@
-import type { Gateway, GatewayRunResult } from '../gateway.ts';
+import type { Gateway, GatewayRunResult, RunOptions } from '../gateway.ts';
 import { AGENT_IDS } from '../types.ts';
 import type { AgentId } from '../types.ts';
 
@@ -51,7 +51,7 @@ function formatRun(r: GatewayRunResult): ToolResult {
   });
 }
 
-export async function callTool(gw: Gateway, name: string, args: Record<string, unknown>): Promise<ToolResult> {
+export async function callTool(gw: Gateway, name: string, args: Record<string, unknown>, opts: RunOptions = {}): Promise<ToolResult> {
   const agent = (typeof args.agent === 'string' ? args.agent : 'auto') as AgentId | 'auto';
   const cwd = typeof args.cwd === 'string' ? args.cwd : undefined;
   switch (name) {
@@ -72,9 +72,9 @@ export async function callTool(gw: Gateway, name: string, args: Record<string, u
         { skills: s.map((k) => ({ name: k.name, description: k.description, agents: k.agents })) });
     }
     case 'agent_run':
-      return formatRun(await gw.run({ agent, prompt: String(args.prompt), cwd }));
+      return formatRun(await gw.run({ agent, prompt: String(args.prompt), cwd }, opts));
     case 'skill_run':
-      return formatRun(await gw.run({ agent, skill: String(args.skill), input: String(args.input), cwd }));
+      return formatRun(await gw.run({ agent, skill: String(args.skill), input: String(args.input), cwd }, opts));
     default:
       throw new Error(`unreachable tool ${name}`);
   }

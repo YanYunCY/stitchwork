@@ -19,7 +19,7 @@
   - [x] 5.3 Progress events and cancelled runs recorded with `ok: false`. _Req 9.2, 10.3_
   - [x] 5.4 Property P6. _Req 8.3, 8.4_
 
-- [ ] 6. MCP progress and cancellation
+- [x] 6. MCP progress and cancellation
   - Progress frames with throttling; in-flight map; drop responses for cancelled ids. _Req 9.1–9.5, 10.1, 10.2, 10.4_
 
 - [ ] 7. `stitchwork doctor`

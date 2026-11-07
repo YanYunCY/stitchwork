@@ -2,7 +2,8 @@ import type { Readable, Writable } from 'node:stream';
 import type { Gateway } from '../gateway.ts';
 import { AGENT_IDS } from '../types.ts';
 import { ErrorCode, RpcError, failure, isRequest, lineSplitter, success } from './jsonrpc.ts';
-import type { JsonRpcRequest } from './jsonrpc.ts';
+import type { JsonRpcId, JsonRpcRequest } from './jsonrpc.ts';
+import type { ProgressEvent } from '../gateway.ts';
 import { TOOLS, callTool } from './tools.ts';
 
 export const PROTOCOL_VERSION = '2025-06-18';
@@ -15,8 +16,33 @@ export interface ServerIO {
   log?: (msg: string) => void;
 }
 
+export interface CallContext {
+  signal?: AbortSignal;
+  /** present only when the client asked for progress (Req 9.1, 9.5) */
+  onProgress?: (e: ProgressEvent) => void;
+}
+
+export const PROGRESS_THROTTLE_MS = 250;
+const MAX_PROGRESS_MESSAGE = 200;
+
+/** Turn gateway events into MCP progress frames: increasing counter, ≤200 chars, output throttled (Req 9.2–9.4). */
+export function progressReporter(token: string | number, send: (msg: unknown) => void, now: () => number = Date.now) {
+  let progress = 0;
+  let lastOutput = -Infinity;
+  return (e: ProgressEvent) => {
+    if (e.kind === 'output') {
+      const t = now();
+      if (t - lastOutput < PROGRESS_THROTTLE_MS) return;
+      lastOutput = t;
+    }
+    const flat = e.message.replace(/\s+/g, ' ').trim();
+    const message = flat.length > MAX_PROGRESS_MESSAGE ? flat.slice(0, MAX_PROGRESS_MESSAGE - 1) + '…' : flat;
+    send({ jsonrpc: '2.0', method: 'notifications/progress', params: { progressToken: token, progress: ++progress, message } });
+  };
+}
+
 export function createMcpHandler(gw: Gateway) {
-  return async function handle(req: JsonRpcRequest): Promise<unknown> {
+  return async function handle(req: JsonRpcRequest, ctx: CallContext = {}): Promise<unknown> {
     const params = (typeof req.params === 'object' && req.params !== null ? req.params : {}) as Record<string, unknown>;
     switch (req.method) {
       case 'initialize': {
@@ -43,7 +69,7 @@ export function createMcpHandler(gw: Gateway) {
         if (args.agent !== undefined && !(typeof args.agent === 'string' && [...AGENT_IDS, 'auto'].includes(args.agent))) {
           throw new RpcError(ErrorCode.InvalidParams, `agent must be one of ${[...AGENT_IDS, 'auto'].join(', ')}`);
         }
-        return callTool(gw, tool.name, args);
+        return callTool(gw, tool.name, args, ctx);
       }
       default:
         throw new RpcError(ErrorCode.MethodNotFound, `Method not found: ${req.method}`);
@@ -56,7 +82,17 @@ export function serveMcp(gw: Gateway, io: ServerIO): { done: Promise<void> } {
   const handle = createMcpHandler(gw);
   const log = io.log ?? ((m: string) => process.stderr.write(`[stitchwork] ${m}\n`));
   const pending = new Set<Promise<void>>();
+  const inflight = new Map<JsonRpcId, AbortController>();
   const send = (msg: unknown) => io.output.write(JSON.stringify(msg) + '\n');
+
+  const cancel = (params: unknown) => {
+    const id = typeof params === 'object' && params !== null ? (params as { requestId?: unknown }).requestId : undefined;
+    if (typeof id !== 'string' && typeof id !== 'number') return;
+    const ac = inflight.get(id);
+    if (!ac) return; // unknown or finished: ignore (Req 10.4)
+    log(`cancelling request ${id}`);
+    ac.abort();
+  };
 
   const onLine = (line: string) => {
     let msg: unknown;
@@ -75,20 +111,39 @@ export function serveMcp(gw: Gateway, io: ServerIO): { done: Promise<void> } {
     }
     if (msg.id === undefined) {
       // Notification: never answered (Req 2.8).
-      if (msg.method !== 'notifications/initialized' && msg.method !== 'notifications/cancelled') log(`ignored notification ${msg.method}`);
+      if (msg.method === 'notifications/cancelled') cancel(msg.params);
+      else if (msg.method !== 'notifications/initialized') log(`ignored notification ${msg.method}`);
       return;
     }
     const id = msg.id;
-    const p = handle(msg)
-      .then((result) => void send(success(id, result)))
+    const ctx: CallContext = {};
+    let ac: AbortController | undefined;
+    if (msg.method === 'tools/call') {
+      ac = new AbortController();
+      inflight.set(id, ac);
+      ctx.signal = ac.signal;
+      const params = typeof msg.params === 'object' && msg.params !== null ? (msg.params as Record<string, unknown>) : {};
+      const meta = typeof params._meta === 'object' && params._meta !== null ? (params._meta as Record<string, unknown>) : {};
+      const token = meta.progressToken;
+      if (typeof token === 'string' || typeof token === 'number') ctx.onProgress = progressReporter(token, send);
+    }
+    const cancelled = () => ac?.signal.aborted === true;
+    const p = handle(msg, ctx)
+      .then((result) => {
+        if (!cancelled()) send(success(id, result)); // no response for a cancelled request (Req 10.2)
+      })
       .catch((e: unknown) => {
+        if (cancelled()) return;
         if (e instanceof RpcError) send(failure(id, e.code, e.message));
         else {
           log(`internal error: ${(e as Error).stack ?? String(e)}`);
           send(failure(id, ErrorCode.InternalError, 'Internal error'));
         }
       })
-      .finally(() => pending.delete(p));
+      .finally(() => {
+        pending.delete(p);
+        inflight.delete(id);
+      });
     pending.add(p);
   };
 
