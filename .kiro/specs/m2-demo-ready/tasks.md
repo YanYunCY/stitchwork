@@ -13,11 +13,11 @@
 - [x] 4. Runner abort and streaming
   - `signal` and `onStdout` on `ProcessSpec`; `cancelled` on the result. _Req 10.1, 9.2_
 
-- [ ] 5. Gateway failover, progress and cancellation
-  - [ ] 5.1 Config `cooldownMinutes`, `maxFallbacks`. _Req 8.2, 8.3_
-  - [ ] 5.2 Failover loop with `fallbacks`; no fallback for explicit runs. _Req 8.3–8.5_
-  - [ ] 5.3 Progress events and cancelled runs recorded with `ok: false`. _Req 9.2, 10.3_
-  - [ ] 5.4 Property P6. _Req 8.3, 8.4_
+- [x] 5. Gateway failover, progress and cancellation
+  - [x] 5.1 Config `cooldownMinutes`, `maxFallbacks`. _Req 8.2, 8.3_
+  - [x] 5.2 Failover loop with `fallbacks`; no fallback for explicit runs. _Req 8.3–8.5_
+  - [x] 5.3 Progress events and cancelled runs recorded with `ok: false`. _Req 9.2, 10.3_
+  - [x] 5.4 Property P6. _Req 8.3, 8.4_
 
 - [ ] 6. MCP progress and cancellation
   - Progress frames with throttling; in-flight map; drop responses for cancelled ids. _Req 9.1–9.5, 10.1, 10.2, 10.4_

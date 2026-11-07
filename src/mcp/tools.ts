@@ -37,13 +37,18 @@ const text = (t: string, isError = false, structuredContent?: Record<string, unk
   ({ content: [{ type: 'text', text: t }], ...(structuredContent ? { structuredContent } : {}), ...(isError ? { isError: true } : {}) });
 
 const pct = (h: number) => `${Math.round(h * 100)}%`;
+const until = (t: number | null) => (t === null ? '' : ` · cooling until ${new Date(t).toISOString().slice(11, 16)}Z`);
 const lim = (used: number, limit: number | null) => (limit === null ? `${used}` : `${used}/${limit}`);
 
 function formatRun(r: GatewayRunResult): ToolResult {
   if (r.refused) return text(`Refused: ${r.reason}`, true);
   const u = r.usage;
-  const footer = `\n\n— ${r.agent} (${r.routedBy}) · ${u.totalTokens} tokens${u.estimated ? ' (estimated)' : ''} · ${(r.durationMs / 1000).toFixed(1)}s`;
-  return text(r.output + footer, !r.ok, { agent: r.agent, ok: r.ok, routedBy: r.routedBy, usage: { ...u }, durationMs: r.durationMs, exitCode: r.exitCode });
+  const via = r.fallbacks.length ? ` · fell back from ${r.fallbacks.map((f) => `${f.agent} (${f.reason})`).join(', ')}` : '';
+  const footer = `\n\n— ${r.agent} (${r.routedBy}) · ${u.totalTokens} tokens${u.estimated ? ' (estimated)' : ''} · ${(r.durationMs / 1000).toFixed(1)}s${via}`;
+  return text(r.output + footer, !r.ok, {
+    agent: r.agent, ok: r.ok, routedBy: r.routedBy, usage: { ...u }, durationMs: r.durationMs, exitCode: r.exitCode,
+    fallbacks: r.fallbacks.map((f) => ({ ...f })), ...(r.rateLimited ? { rateLimited: true } : {}), ...(r.cancelled ? { cancelled: true } : {}),
+  });
 }
 
 export async function callTool(gw: Gateway, name: string, args: Record<string, unknown>): Promise<ToolResult> {
@@ -52,12 +57,12 @@ export async function callTool(gw: Gateway, name: string, args: Record<string, u
   switch (name) {
     case 'agents_list': {
       const rows = gw.agents().map((a) =>
-        `${a.id.padEnd(9)} ${a.enabled ? 'enabled ' : 'disabled'} ${a.available ? 'installed' : 'missing  '} headroom ${pct(a.quota.headroom)}${a.quota.exhausted ? ' EXHAUSTED' : ''}`);
+        `${a.id.padEnd(9)} ${a.enabled ? 'enabled ' : 'disabled'} ${a.available ? 'installed' : 'missing  '} headroom ${pct(a.quota.headroom)}${a.quota.exhausted ? ' EXHAUSTED' : ''}${a.quota.coolingUntil !== null ? ' COOLING' : ''}`);
       return text(rows.join('\n'), false, { agents: gw.agents().map((a) => ({ id: a.id, name: a.name, enabled: a.enabled, available: a.available, headroom: a.quota.headroom })) });
     }
     case 'quota_status': {
       const q = gw.quota();
-      const rows = q.map((s) => `${s.agent.padEnd(9)} tokens ${lim(s.usedTokens, s.tokenLimit)} · requests ${lim(s.usedRequests, s.requestLimit)} · headroom ${pct(s.headroom)}${s.exhausted ? ' · EXHAUSTED' : ''}`);
+      const rows = q.map((s) => `${s.agent.padEnd(9)} tokens ${lim(s.usedTokens, s.tokenLimit)} · requests ${lim(s.usedRequests, s.requestLimit)} · headroom ${pct(s.headroom)}${s.exhausted ? ' · EXHAUSTED' : ''}${until(s.coolingUntil)}`);
       return text(`Window: ${gw.config.windowMinutes} min\n` + rows.join('\n'), false, { windowMinutes: gw.config.windowMinutes, agents: q.map((s) => ({ ...s })) });
     }
     case 'skills_list': {

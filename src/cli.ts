@@ -108,7 +108,8 @@ export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps
     return 1;
   }
   io.stdout(r.output + '\n');
-  io.stderr(`— ${r.agent} (${r.routedBy}) · ${r.usage.totalTokens} tokens${r.usage.estimated ? ' (estimated)' : ''} · ${(r.durationMs / 1000).toFixed(1)}s\n`);
+  const via = r.fallbacks.length ? ` · fell back from ${r.fallbacks.map((f) => `${f.agent} (${f.reason})`).join(', ')}` : '';
+  io.stderr(`— ${r.agent} (${r.routedBy}) · ${r.usage.totalTokens} tokens${r.usage.estimated ? ' (estimated)' : ''} · ${(r.durationMs / 1000).toFixed(1)}s${via}\n`);
   return r.ok ? 0 : 1;
 }
 

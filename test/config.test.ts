@@ -50,3 +50,15 @@ describe('config', () => {
     assert.equal(c.agents.opencode.enabled, false);
   });
 });
+
+describe('M2 config fields (Req 8.2, 8.3)', () => {
+  it('defaults cooldownMinutes to 15 and maxFallbacks to 2', () => {
+    const c = mergeConfig({}, '/tmp');
+    assert.equal(c.cooldownMinutes, 15);
+    assert.equal(c.maxFallbacks, 2);
+  });
+  it('rejects a bad maxFallbacks with its field path', () => {
+    assert.throws(() => mergeConfig({ maxFallbacks: 7 }, '/tmp'), /maxFallbacks must be an integer from 0 to 3/);
+    assert.throws(() => mergeConfig({ cooldownMinutes: 0 }, '/tmp'), /cooldownMinutes must be a positive number/);
+  });
+});

@@ -13,6 +13,10 @@ export interface AgentConfig {
 export interface StitchworkConfig {
   windowMinutes: number;
   timeoutSeconds: number;
+  /** how long a rate-limited agent is skipped (Req 8.2) */
+  cooldownMinutes: number;
+  /** how many other agents an auto run may fall back to (Req 8.3) */
+  maxFallbacks: number;
   ledgerPath: string;
   skillsDir: string;
   agents: Record<AgentId, AgentConfig>;
@@ -28,6 +32,8 @@ export function defaultConfig(baseDir: string = process.cwd()): StitchworkConfig
   return {
     windowMinutes: 300,
     timeoutSeconds: 600,
+    cooldownMinutes: 15,
+    maxFallbacks: 2,
     ledgerPath: resolve(baseDir, '.stitchwork', 'ledger.jsonl'),
     skillsDir: resolve(baseDir, 'skills'),
     agents,
@@ -52,6 +58,12 @@ export function mergeConfig(raw: unknown, baseDir: string): StitchworkConfig {
   if (!isObj(raw)) throw new ConfigError('config root must be a JSON object');
   if (raw.windowMinutes !== undefined) cfg.windowMinutes = positive(raw.windowMinutes, 'windowMinutes');
   if (raw.timeoutSeconds !== undefined) cfg.timeoutSeconds = positive(raw.timeoutSeconds, 'timeoutSeconds');
+  if (raw.cooldownMinutes !== undefined) cfg.cooldownMinutes = positive(raw.cooldownMinutes, 'cooldownMinutes');
+  if (raw.maxFallbacks !== undefined) {
+    const v = raw.maxFallbacks;
+    if (typeof v !== 'number' || !Number.isInteger(v) || v < 0 || v > 3) throw new ConfigError('maxFallbacks must be an integer from 0 to 3');
+    cfg.maxFallbacks = v;
+  }
   if (raw.ledgerPath !== undefined) cfg.ledgerPath = resolve(baseDir, str(raw.ledgerPath, 'ledgerPath'));
   if (raw.skillsDir !== undefined) cfg.skillsDir = resolve(baseDir, str(raw.skillsDir, 'skillsDir'));
   if (raw.agents !== undefined) {
