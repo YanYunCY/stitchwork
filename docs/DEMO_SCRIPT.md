@@ -2,7 +2,7 @@
 
 **Setup.** Kiro on the left, a terminal with a large font on the right. Dark theme. No music, or a track you made yourself (the rules forbid copyrighted music). Record the terminal parts with `stitchwork demo --pace 900` so every beat is reproducible. Keep vendor logos off screen unless they are part of the CLI output.
 
-**Voice-over budget.** About 360 words at a calm pace. The timings below add up to 2:40, leaving 20 seconds of slack.
+**Voice-over budget.** About 230 words at a calm pace, so visuals carry the rest. The timings add up to 2:40, leaving 20 seconds of slack.
 
 | Time | On screen | Voice-over |
 | --- | --- | --- |
