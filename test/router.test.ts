@@ -8,7 +8,7 @@ import { AGENT_IDS } from '../src/types.ts';
 import type { AgentId } from '../src/types.ts';
 
 function snap(agent: AgentId, headroom: number, exhausted = false): QuotaSnapshot {
-  return { agent, usedTokens: 0, usedRequests: 0, tokenLimit: null, requestLimit: null, headroom, exhausted, resetsAt: exhausted ? 120_000 : null };
+  return { agent, usedTokens: 0, usedRequests: 0, tokenLimit: null, requestLimit: null, headroom, exhausted, resetsAt: exhausted ? 120_000 : null, coolingUntil: null };
 }
 
 function ctx(opts: Partial<Record<AgentId, { enabled?: boolean; available?: boolean; headroom?: number; exhausted?: boolean }>>): RouteContext {

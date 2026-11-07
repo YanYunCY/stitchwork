@@ -3,9 +3,9 @@
 - [x] 1. Rate-limit detection
   - `src/ratelimit.ts` with `isRateLimited`; table-driven tests for each vendor phrasing. _Req 8.1_
 
-- [ ] 2. Ledger cooldown
-  - [ ] 2.1 `rateLimited` flag on events, `cooldownMs`, `coolingUntil` in snapshots. _Req 8.1, 8.2, 8.7_
-  - [ ] 2.2 Property P5. _Req 8.2_
+- [x] 2. Ledger cooldown
+  - [x] 2.1 `rateLimited` flag on events, `cooldownMs`, `coolingUntil` in snapshots. _Req 8.1, 8.2, 8.7_
+  - [x] 2.2 Property P5. _Req 8.2_
 
 - [ ] 3. Router cooldown and exclusion
   - Skip cooling agents in auto mode, refuse them explicitly, `exclude` set. _Req 8.2, 8.6_

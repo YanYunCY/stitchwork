@@ -10,6 +10,8 @@ export interface UsageEvent {
   tokens: number;
   ok: boolean;
   estimated: boolean;
+  /** set only when the run hit a vendor rate limit (Req 8.1) */
+  rateLimited?: boolean;
 }
 
 export interface QuotaSnapshot {
@@ -23,6 +25,8 @@ export interface QuotaSnapshot {
   exhausted: boolean;
   /** when the oldest counted event leaves the window, or null if none */
   resetsAt: number | null;
+  /** end of the rate-limit cooldown, or null if not cooling down (Req 8.2) */
+  coolingUntil: number | null;
 }
 
 export interface LedgerStore {
@@ -53,7 +57,9 @@ export function parseEvent(line: string): UsageEvent | undefined {
       typeof v.ts === 'number' && Number.isFinite(v.ts) && isAgentId(v.agent) &&
       typeof v.tokens === 'number' && Number.isFinite(v.tokens) && v.tokens >= 0
     ) {
-      return { ts: v.ts, agent: v.agent, tokens: v.tokens, ok: v.ok !== false, estimated: v.estimated === true };
+      const e: UsageEvent = { ts: v.ts, agent: v.agent, tokens: v.tokens, ok: v.ok !== false, estimated: v.estimated === true };
+      if (v.rateLimited === true) e.rateLimited = true;
+      return e;
     }
   } catch {
     /* malformed lines are ignored (Req 3.3) */
@@ -67,16 +73,20 @@ function remaining(used: number, limit: number | undefined): number {
   return Math.min(1, Math.max(0, 1 - used / limit));
 }
 
+export const DEFAULT_COOLDOWN_MS = 15 * 60_000;
+
 export class QuotaLedger {
   private events: UsageEvent[] = [];
   private readonly limits: Partial<Record<AgentId, Limits>>;
   private readonly windowMs: number;
   private readonly store: LedgerStore;
+  private readonly cooldownMs: number;
 
-  constructor(limits: Partial<Record<AgentId, Limits>>, windowMs: number, store: LedgerStore) {
+  constructor(limits: Partial<Record<AgentId, Limits>>, windowMs: number, store: LedgerStore, cooldownMs: number = DEFAULT_COOLDOWN_MS) {
     this.limits = limits;
     this.windowMs = windowMs;
     this.store = store;
+    this.cooldownMs = cooldownMs;
     for (const line of store.load()) {
       const e = parseEvent(line);
       if (e) this.events.push(e);
@@ -89,11 +99,13 @@ export class QuotaLedger {
       ts: event.ts, agent: event.agent, tokens: Math.max(0, Math.round(event.tokens)),
       ok: event.ok, estimated: event.estimated,
     };
+    if (event.rateLimited) clean.rateLimited = true;
     this.store.append(JSON.stringify(clean));
     this.events.push(clean);
     this.events.sort((a, b) => a.ts - b.ts);
     const cutoff = now - this.windowMs;
-    this.events = this.events.filter((e) => e.ts > cutoff);
+    const coolCutoff = now - this.cooldownMs;
+    this.events = this.events.filter((e) => e.ts > cutoff || (e.rateLimited === true && e.ts > coolCutoff));
   }
 
   snapshot(agent: AgentId, now: number): QuotaSnapshot {
@@ -101,8 +113,13 @@ export class QuotaLedger {
     let usedTokens = 0;
     let usedRequests = 0;
     let oldest: number | null = null;
+    let coolingUntil: number | null = null;
     for (const e of this.events) {
-      if (e.agent !== agent || e.ts <= cutoff || e.ts > now) continue;
+      if (e.agent !== agent || e.ts > now) continue;
+      if (e.rateLimited && now < e.ts + this.cooldownMs) {
+        coolingUntil = Math.max(coolingUntil ?? 0, e.ts + this.cooldownMs);
+      }
+      if (e.ts <= cutoff) continue;
       usedTokens += e.tokens;
       usedRequests += 1;
       if (oldest === null || e.ts < oldest) oldest = e.ts;
@@ -117,6 +134,7 @@ export class QuotaLedger {
       tokenLimit: lim.tokens ?? null, requestLimit: lim.requests ?? null,
       headroom, exhausted,
       resetsAt: oldest === null ? null : oldest + this.windowMs,
+      coolingUntil,
     };
   }
 
