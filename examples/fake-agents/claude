@@ -1,4 +1,6 @@
 #!/usr/bin/env node
 // Demo stand-in for Claude Code: mimics `claude -p <prompt> --output-format json`.
+if (process.argv.includes('--version')) { console.log('claude-fake 0.0.0 (Stitchwork demo stand-in)'); process.exit(0); }
+if ((process.env.STITCHWORK_FAKE_RATE_LIMIT ?? '').split(',').includes('claude')) { console.error('API Error: 429 rate_limit_error: This request would exceed your rate limit.'); process.exit(1); }
 const prompt = process.argv[process.argv.indexOf('-p') + 1] ?? '';
 console.log(JSON.stringify({ type: 'result', result: `🧠 [claude] ${prompt.slice(0, 80)}`, usage: { input_tokens: Math.ceil(prompt.length / 4) + 900, output_tokens: 240 } }));

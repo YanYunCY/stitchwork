@@ -2,6 +2,8 @@ import { realpathSync } from 'node:fs';
 import type { Readable, Writable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import { ConfigError, loadConfig } from './config.ts';
+import { runDemo } from './demo.ts';
+import { doctor, formatDoctor } from './doctor.ts';
 import { Gateway } from './gateway.ts';
 import type { GatewayDeps } from './gateway.ts';
 import { serveMcp } from './mcp/server.ts';
@@ -16,6 +18,8 @@ Usage:
   stitchwork agents                        list agents, install state, quota headroom
   stitchwork quota                         usage per agent in the current window
   stitchwork skills                        list reusable skills
+  stitchwork doctor                        check which agent CLIs are installed
+  stitchwork demo [--pace <ms>]            scripted demo with bundled stand-in agents
   stitchwork run [--agent <id|auto>] [--skill <name>] [--cwd <dir>] <prompt...>
 
 Options:
@@ -29,6 +33,8 @@ export interface CliIO {
   stderr: (s: string) => void;
   stdin?: Readable;
   stdoutStream?: Writable;
+  /** ANSI colour for human-facing output */
+  color?: boolean;
 }
 
 interface Parsed { command?: string; flags: Record<string, string>; rest: string[] }
@@ -58,9 +64,17 @@ export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps
     io.stdout(USAGE + '\n');
     return flags.help ? 0 : 2;
   }
-  if (!['serve', 'agents', 'quota', 'skills', 'run'].includes(command)) {
+  if (!['serve', 'agents', 'quota', 'skills', 'run', 'doctor', 'demo'].includes(command)) {
     io.stderr(`Unknown command: ${command}\n\n${USAGE}\n`);
     return 2;
+  }
+  if (command === 'demo') {
+    const pace = flags.pace === undefined ? 0 : Number(flags.pace);
+    if (!Number.isFinite(pace) || pace < 0) {
+      io.stderr('--pace must be a number of milliseconds\n');
+      return 2;
+    }
+    return runDemo({ out: io.stdout, color: io.color ?? false, paceMs: pace });
   }
   let gw: Gateway;
   try {
@@ -80,6 +94,11 @@ export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps
       log: (m) => io.stderr(`[stitchwork] ${m}\n`),
     });
     await done;
+    return 0;
+  }
+
+  if (command === 'doctor') {
+    io.stdout(formatDoctor(await doctor(gw, deps.spawn), gw.config.windowMinutes) + '\n');
     return 0;
   }
 
@@ -115,7 +134,7 @@ export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps
 
 /** Entry point used by bin/stitchwork.js and `node src/cli.ts`. */
 export function run(argv: readonly string[] = process.argv.slice(2)): void {
-  main(argv, { stdout: (s) => process.stdout.write(s), stderr: (s) => process.stderr.write(s) })
+  main(argv, { stdout: (s) => process.stdout.write(s), stderr: (s) => process.stderr.write(s), color: process.stdout.isTTY === true && !process.env.NO_COLOR })
     .then((code) => { process.exitCode = code; })
     .catch((e: unknown) => { process.stderr.write(`${(e as Error).stack ?? String(e)}\n`); process.exitCode = 1; });
 }

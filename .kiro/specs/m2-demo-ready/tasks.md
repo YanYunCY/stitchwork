@@ -22,10 +22,10 @@
 - [x] 6. MCP progress and cancellation
   - Progress frames with throttling; in-flight map; drop responses for cancelled ids. _Req 9.1–9.5, 10.1, 10.2, 10.4_
 
-- [ ] 7. `stitchwork doctor`
+- [x] 7. `stitchwork doctor`
   - _Req 11.1–11.3_
 
-- [ ] 8. `stitchwork demo`
+- [x] 8. `stitchwork demo`
   - Fake Gemini honours `STITCHWORK_FAKE_RATE_LIMIT`; scripted scenario; integration test. _Req 12.1–12.4_
 
 - [ ] 9. Installable build
