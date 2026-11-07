@@ -7,7 +7,7 @@
   - [x] 2.1 `rateLimited` flag on events, `cooldownMs`, `coolingUntil` in snapshots. _Req 8.1, 8.2, 8.7_
   - [x] 2.2 Property P5. _Req 8.2_
 
-- [ ] 3. Router cooldown and exclusion
+- [x] 3. Router cooldown and exclusion
   - Skip cooling agents in auto mode, refuse them explicitly, `exclude` set. _Req 8.2, 8.6_
 
 - [ ] 4. Runner abort and streaming

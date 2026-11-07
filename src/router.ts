@@ -12,6 +12,8 @@ export interface RouteRequest {
   requested: AgentId | 'auto';
   /** skill-preferred agents, in priority order (Req 4.2) */
   preferred?: readonly AgentId[];
+  /** agents already tried for this request (Req 8.3) */
+  exclude?: ReadonlySet<AgentId>;
 }
 
 export type RouteDecision =
@@ -32,6 +34,9 @@ export function chooseAgent(req: RouteRequest, ctx: RouteContext, now: number = 
     if (snap.exhausted) {
       return { ok: false, reason: `Agent "${agent}" has no quota left in this window.${formatReset(snap.resetsAt, now)}` };
     }
+    if (snap.coolingUntil !== null) {
+      return { ok: false, reason: `Agent "${agent}" was rate-limited and is cooling down until ${new Date(snap.coolingUntil).toISOString()}. Use agent "auto" to route elsewhere.` };
+    }
     return { ok: true, agent, routedBy: 'explicit' };
   }
 
@@ -39,10 +44,12 @@ export function chooseAgent(req: RouteRequest, ctx: RouteContext, now: number = 
   const skipped: string[] = [];
   const eligible: { agent: AgentId; headroom: number; order: number }[] = [];
   candidates.forEach((agent, order) => {
+    if (req.exclude?.has(agent)) return void skipped.push(`${agent}: already tried`);
     if (!ctx.isEnabled(agent)) return void skipped.push(`${agent}: disabled`);
     if (!ctx.isAvailable(agent)) return void skipped.push(`${agent}: binary not found`);
     const snap = ctx.snapshot(agent);
     if (snap.exhausted) return void skipped.push(`${agent}: quota exhausted${formatReset(snap.resetsAt, now)}`);
+    if (snap.coolingUntil !== null) return void skipped.push(`${agent}: rate-limited, cooling down until ${new Date(snap.coolingUntil).toISOString()}`);
     eligible.push({ agent, headroom: snap.headroom, order });
   });
   eligible.sort((a, b) => b.headroom - a.headroom || a.order - b.order);

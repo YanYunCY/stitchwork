@@ -71,3 +71,25 @@ describe('chooseAgent', () => {
     ));
   });
 });
+
+describe('chooseAgent cooldown and exclusion (Req 8.2, 8.3, 8.6)', () => {
+  const ctx = (cooling: string[]) => ({
+    isEnabled: () => true,
+    isAvailable: () => true,
+    snapshot: (agent: AgentId) => ({ ...snap(agent, 1, false), coolingUntil: cooling.includes(agent) ? 900_000 : null }),
+  });
+  it('skips a cooling agent in auto mode with a reason', () => {
+    const d = chooseAgent({ requested: 'auto', preferred: ['gemini'] }, ctx(['gemini']), 0);
+    assert.equal(d.ok, false);
+    if (!d.ok) assert.match(d.reason, /gemini: rate-limited, cooling down/);
+  });
+  it('refuses an explicit run to a cooling agent', () => {
+    const d = chooseAgent({ requested: 'gemini' }, ctx(['gemini']), 0);
+    assert.equal(d.ok, false);
+    if (!d.ok) assert.match(d.reason, /cooling down until/);
+  });
+  it('never picks an excluded agent', () => {
+    const d = chooseAgent({ requested: 'auto', exclude: new Set<AgentId>(['codex', 'claude', 'gemini']) }, ctx([]), 0);
+    assert.deepEqual(d, { ok: true, agent: 'opencode', routedBy: 'auto' });
+  });
+});
