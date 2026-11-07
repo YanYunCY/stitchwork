@@ -9,6 +9,10 @@ export interface ProcessSpec {
   cwd?: string;
   timeoutMs: number;
   env?: NodeJS.ProcessEnv;
+  /** aborting kills the child (Req 10.1) */
+  signal?: AbortSignal;
+  /** called with each stdout chunk as it arrives (Req 9.2) */
+  onStdout?: (chunk: string) => void;
 }
 
 export interface ProcessResult {
@@ -17,6 +21,7 @@ export interface ProcessResult {
   exitCode: number | null;
   timedOut: boolean;
   notFound: boolean;
+  cancelled: boolean;
   durationMs: number;
 }
 
@@ -49,6 +54,7 @@ export function runProcess(
     const out = collector();
     const err = collector();
     let timedOut = false;
+    let cancelled = false;
     let settled = false;
     let killTimer: NodeJS.Timeout | undefined;
 
@@ -57,10 +63,28 @@ export function runProcess(
       settled = true;
       clearTimeout(timer);
       if (killTimer) clearTimeout(killTimer);
-      resolve({ stdout: out.text(), stderr: err.text(), exitCode, timedOut, notFound, durationMs: now() - started });
+      spec.signal?.removeEventListener('abort', onAbort);
+      resolve({ stdout: out.text(), stderr: err.text(), exitCode, timedOut, notFound, cancelled, durationMs: now() - started });
     };
 
-    let child: ChildProcess;
+    if (spec.signal?.aborted) {
+      settled = true;
+      resolve({ stdout: '', stderr: '', exitCode: null, timedOut: false, notFound: false, cancelled: true, durationMs: 0 });
+      return;
+    }
+
+    let child: ChildProcess | undefined;
+    const stop = () => {
+      child?.kill('SIGTERM');
+      killTimer = setTimeout(() => child?.kill('SIGKILL'), KILL_GRACE_MS);
+      killTimer.unref?.();
+    };
+    const onAbort = () => {
+      if (settled) return;
+      cancelled = true;
+      stop();
+    };
+
     try {
       child = spawnFn(spec.binary, spec.args, {
         cwd: spec.cwd,
@@ -72,18 +96,26 @@ export function runProcess(
       const code = (e as NodeJS.ErrnoException).code;
       err.push(String((e as Error).message));
       settled = true;
-      resolve({ stdout: '', stderr: err.text(), exitCode: null, timedOut: false, notFound: code === 'ENOENT', durationMs: now() - started });
+      resolve({ stdout: '', stderr: err.text(), exitCode: null, timedOut: false, notFound: code === 'ENOENT', cancelled: false, durationMs: now() - started });
       return;
     }
 
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill('SIGTERM');
-      killTimer = setTimeout(() => child.kill('SIGKILL'), KILL_GRACE_MS);
-      killTimer.unref?.();
+      stop();
     }, spec.timeoutMs);
+    spec.signal?.addEventListener('abort', onAbort, { once: true });
 
-    child.stdout?.on('data', (c: Buffer) => out.push(c));
+    child.stdout?.on('data', (c: Buffer) => {
+      out.push(c);
+      if (spec.onStdout) {
+        try {
+          spec.onStdout(c.toString('utf8'));
+        } catch {
+          /* a progress sink must never break a run */
+        }
+      }
+    });
     child.stderr?.on('data', (c: Buffer) => err.push(c));
     child.on('error', (e: NodeJS.ErrnoException) => {
       err.push(e.message);

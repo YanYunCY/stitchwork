@@ -10,7 +10,7 @@
 - [x] 3. Router cooldown and exclusion
   - Skip cooling agents in auto mode, refuse them explicitly, `exclude` set. _Req 8.2, 8.6_
 
-- [ ] 4. Runner abort and streaming
+- [x] 4. Runner abort and streaming
   - `signal` and `onStdout` on `ProcessSpec`; `cancelled` on the result. _Req 10.1, 9.2_
 
 - [ ] 5. Gateway failover, progress and cancellation
