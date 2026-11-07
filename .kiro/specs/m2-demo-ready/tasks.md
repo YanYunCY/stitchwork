@@ -28,7 +28,7 @@
 - [x] 8. `stitchwork demo`
   - Fake Gemini honours `STITCHWORK_FAKE_RATE_LIMIT`; scripted scenario; integration test. _Req 12.1–12.4_
 
-- [ ] 9. Installable build
+- [x] 9. Installable build
   - `tsconfig.build.json`, `build` and `prepack` scripts, `files`, bin fallback; test that `dist/cli.js` runs `--help`. _Req 13.1–13.3_
 
 - [ ] 10. Docs

@@ -5,17 +5,48 @@
   "license": "MIT",
   "author": "YanYunCY",
   "type": "module",
-  "bin": { "stitchwork": "./bin/stitchwork.js" },
-  "engines": { "node": ">=22.18" },
+  "bin": {
+    "stitchwork": "./bin/stitchwork.js"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepack": "npm run build",
     "test": "node --test --test-reporter=spec \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "serve": "node src/cli.ts serve"
+    "serve": "node src/cli.ts serve",
+    "demo": "node src/cli.ts demo --pace 900"
   },
-  "keywords": ["mcp", "gateway", "codex", "claude-code", "gemini-cli", "opencode", "kiro", "kiroween"],
+  "keywords": [
+    "mcp",
+    "gateway",
+    "codex",
+    "claude-code",
+    "gemini-cli",
+    "opencode",
+    "kiro",
+    "kiroween"
+  ],
   "devDependencies": {
     "@types/node": "^22.10.0",
     "fast-check": "^4.3.0",
     "typescript": "~5.9.3"
-  }
+  },
+  "files": [
+    "bin/",
+    "dist/",
+    "src/",
+    "skills/",
+    "examples/",
+    "stitchwork.config.example.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YanYunCY/stitchwork.git"
+  },
+  "homepage": "https://github.com/YanYunCY/stitchwork#readme"
 }
