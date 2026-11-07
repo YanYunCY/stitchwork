@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "Ledger privacy guard",
+  "description": "When the ledger, gateway or demo code changes, make sure no prompt, model output or secret can reach the usage ledger.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["src/quota/**/*.ts", "src/gateway.ts", "src/demo.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The ledger path may have changed. Check that UsageEvent still holds counts only (ts, agent, tokens, ok, estimated, rateLimited), that record() whitelists fields instead of spreading its input, and that the test 'never writes env values or prompts to the ledger' still passes. If anything could leak a prompt, output or environment value, fix it before continuing (Req 3.8, 6.4)."
+  }
+}

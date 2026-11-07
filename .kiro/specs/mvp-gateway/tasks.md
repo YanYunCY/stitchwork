@@ -40,4 +40,4 @@
 - [x] 10. CLI
   - `serve`, `agents`, `quota`, `skills`, `run`, usage/exit code 2. _Req 7.1–7.4_
 
-- [ ] 11. Milestone 2 (next spec): streaming progress notifications, web dashboard, live quota import from vendor usage endpoints.
+- [x] 11. Milestone 2 moved to its own spec: `.kiro/specs/m2-demo-ready` (progress, cancellation, failover). Web dashboard and quota import are milestone 3.

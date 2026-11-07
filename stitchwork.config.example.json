@@ -1,12 +1,38 @@
 {
   "windowMinutes": 300,
   "timeoutSeconds": 600,
+  "cooldownMinutes": 15,
+  "maxFallbacks": 2,
   "ledgerPath": ".stitchwork/ledger.jsonl",
   "skillsDir": "skills",
   "agents": {
-    "codex":    { "enabled": true, "limits": { "tokens": 2000000, "requests": 150 } },
-    "claude":   { "enabled": true, "limits": { "tokens": 1500000, "requests": 100 }, "extraArgs": ["--model", "sonnet"] },
-    "gemini":   { "enabled": true, "limits": { "requests": 1000 } },
-    "opencode": { "enabled": false, "binary": "opencode" }
+    "codex": {
+      "enabled": true,
+      "limits": {
+        "tokens": 2000000,
+        "requests": 150
+      }
+    },
+    "claude": {
+      "enabled": true,
+      "limits": {
+        "tokens": 1500000,
+        "requests": 100
+      },
+      "extraArgs": [
+        "--model",
+        "sonnet"
+      ]
+    },
+    "gemini": {
+      "enabled": true,
+      "limits": {
+        "requests": 1000
+      }
+    },
+    "opencode": {
+      "enabled": false,
+      "binary": "opencode"
+    }
   }
 }

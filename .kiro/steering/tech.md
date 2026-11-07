@@ -6,7 +6,7 @@ inclusion: always
 
 ## Runtime
 - Node.js **22.18+**, ESM only (`"type": "module"`).
-- TypeScript executed directly through Node's built-in type stripping. No bundler, no build step for running or testing.
+- TypeScript executed directly through Node's built-in type stripping. No bundler, no build step for running or testing. `npm run build` (tsc with `rewriteRelativeImportExtensions`) exists only to publish `dist/` for `npm i -g`, because Node does not strip types inside `node_modules`.
   - Use only erasable syntax: no `enum`, no `namespace`, no parameter properties, no decorators.
   - Relative imports always include the `.ts` extension.
   - Type-only imports use `import type`.

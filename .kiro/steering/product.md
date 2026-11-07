@@ -24,11 +24,11 @@ An open-source control plane that stitches Codex CLI, Claude Code, Gemini CLI an
 - **Secrets stay in the environment.** Nothing sensitive is written to config, logs, or the ledger.
 - **Frankenstein, but tidy.** Each adapter is a small, isolated "limb"; the core never special-cases one agent.
 
-## Out of scope for the MVP
-- A web dashboard (milestone 2).
-- Streaming partial output over MCP (milestone 2).
-- Remote/HTTP transport and multi-user auth (milestone 3).
-- Reading vendor billing APIs for exact quota; the MVP tracks what passes through the gateway.
+## Out of scope for now
+- Done in M2: progress notifications, cancellation, rate-limit failover.
+- A web dashboard (`stitchwork lab`, milestone 3).
+- Remote/HTTP transport and multi-user auth.
+- Reading vendor billing APIs for exact quota; Stitchwork tracks what passes through the gateway.
 
 ## Tone of docs and UI
 Short, direct, lightly Halloween-themed (stitches, limbs, the lab) but never at the cost of clarity.

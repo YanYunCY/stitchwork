@@ -16,12 +16,17 @@ src/
   adapters/        one file per agent limb + index.ts registry
   runner.ts        spawn a CLI with timeout, capture stdout/stderr (spawn is injectable)
   quota/ledger.ts  rolling-window, append-only JSONL usage ledger
-  router.ts        choose an agent (explicit or auto) and enforce quota
+  router.ts        choose an agent (explicit or auto), enforce quota and rate-limit cooldown
+  ratelimit.ts     vendor-agnostic rate-limit signature detection
   skills/          skill file parser + registry
-  gateway.ts       ties config, adapters, ledger, router, skills together
+  gateway.ts       ties config, adapters, ledger, router, skills together; failover loop
+  doctor.ts        `stitchwork doctor` health check
+  demo.ts          `stitchwork demo` scripted scenario on the bundled stand-in agents
   mcp/             JSON-RPC framing + MCP server and tool definitions
   cli.ts           `stitchwork` entry point
 skills/            built-in reusable skills (*.md)
+examples/          fake-agents/ stand-in CLIs (honour STITCHWORK_FAKE_RATE_LIMIT) + demo config
+dist/              build output (gitignored), produced by `npm run build`
 test/              node:test suites, *.test.ts
 docs/              milestones, demo script, Kiro usage write-up
 ```

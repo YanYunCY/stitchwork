@@ -31,5 +31,5 @@
 - [x] 9. Installable build
   - `tsconfig.build.json`, `build` and `prepack` scripts, `files`, bin fallback; test that `dist/cli.js` runs `--help`. _Req 13.1–13.3_
 
-- [ ] 10. Docs
+- [x] 10. Docs
   - README (both languages), `docs/DEMO_SCRIPT.md` re-timed to the demo command, `docs/KIRO_USAGE.md`, `docs/MILESTONES.md`.
