@@ -5,6 +5,8 @@ import { ConfigError, loadConfig } from './config.ts';
 import { runDemo } from './demo.ts';
 import { doctor, formatDoctor } from './doctor.ts';
 import { Gateway } from './gateway.ts';
+import { runLab } from './lab/command.ts';
+import type { LabCliDeps } from './lab/command.ts';
 import type { GatewayDeps } from './gateway.ts';
 import { serveMcp } from './mcp/server.ts';
 import { callTool } from './mcp/tools.ts';
@@ -20,6 +22,8 @@ Usage:
   stitchwork skills                        list reusable skills
   stitchwork doctor                        check which agent CLIs are installed
   stitchwork demo [--pace <ms>]            scripted demo with bundled stand-in agents
+  stitchwork lab [--port <n>] [--open] [--read-only]
+                                           local dashboard on 127.0.0.1 (default port 7777)
   stitchwork run [--agent <id|auto>] [--skill <name>] [--cwd <dir>] <prompt...>
 
 Options:
@@ -37,6 +41,9 @@ export interface CliIO {
   color?: boolean;
 }
 
+/** flags that never take a value, so they cannot swallow the next argument */
+const BOOLEAN_FLAGS = ['open', 'read-only'];
+
 interface Parsed { command?: string; flags: Record<string, string>; rest: string[] }
 
 export function parseArgs(argv: readonly string[]): Parsed {
@@ -46,6 +53,7 @@ export function parseArgs(argv: readonly string[]): Parsed {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i] as string;
     if (a === '-h' || a === '--help') flags.help = 'true';
+    else if (a.startsWith('--') && BOOLEAN_FLAGS.includes(a.slice(2))) flags[a.slice(2)] = 'true';
     else if (a === '--') { rest.push(...argv.slice(i + 1)); break; }
     else if (a.startsWith('--')) {
       const eq = a.indexOf('=');
@@ -58,13 +66,13 @@ export function parseArgs(argv: readonly string[]): Parsed {
 }
 
 /** Returns the process exit code. */
-export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps = {}): Promise<number> {
+export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps = {}, labDeps: LabCliDeps = {}): Promise<number> {
   const { command, flags, rest } = parseArgs(argv);
   if (flags.help || !command) {
     io.stdout(USAGE + '\n');
     return flags.help ? 0 : 2;
   }
-  if (!['serve', 'agents', 'quota', 'skills', 'run', 'doctor', 'demo'].includes(command)) {
+  if (!['serve', 'agents', 'quota', 'skills', 'run', 'doctor', 'demo', 'lab'].includes(command)) {
     io.stderr(`Unknown command: ${command}\n\n${USAGE}\n`);
     return 2;
   }
@@ -96,6 +104,8 @@ export async function main(argv: readonly string[], io: CliIO, deps: GatewayDeps
     await done;
     return 0;
   }
+
+  if (command === 'lab') return runLab(gw, flags, io, { spawn: deps.spawn, ...labDeps });
 
   if (command === 'doctor') {
     io.stdout(formatDoctor(await doctor(gw, deps.spawn), gw.config.windowMinutes) + '\n');

@@ -82,6 +82,8 @@ const tail = (s: string, n = 2048) => (s.length > n ? '…' + s.slice(-n) : s);
 export class Gateway {
   readonly config: StitchworkConfig;
   readonly ledger: QuotaLedger;
+  /** the backing store, exposed so read-only views can read raw ledger lines (Req 17.3) */
+  readonly store: LedgerStore;
   readonly skills: SkillRegistry;
   private readonly deps: Required<Omit<GatewayDeps, 'store' | 'skills' | 'spawn'>>;
   private readonly spawn: SpawnFn | undefined;
@@ -98,7 +100,8 @@ export class Gateway {
       log: deps.log ?? ((m) => process.stderr.write(`[stitchwork] ${m}\n`)),
     };
     const limits = Object.fromEntries(AGENT_IDS.map((id) => [id, config.agents[id].limits]));
-    this.ledger = new QuotaLedger(limits, config.windowMinutes * 60_000, deps.store ?? fileStore(config.ledgerPath), config.cooldownMinutes * 60_000);
+    this.store = deps.store ?? fileStore(config.ledgerPath);
+    this.ledger = new QuotaLedger(limits, config.windowMinutes * 60_000, this.store, config.cooldownMinutes * 60_000);
     this.skills = deps.skills ?? SkillRegistry.fromDirectory(config.skillsDir);
     for (const w of this.skills.warnings) this.deps.log(w);
   }
@@ -170,7 +173,7 @@ export class Gateway {
       tried.add(agent);
       emit({ kind: 'routed', agent, message: `${decision.routedBy === 'auto' ? 'Auto-routed' : 'Running'} on ${ADAPTERS[agent].displayName}` });
 
-      const result = await this.attempt(agent, prompt, timeoutSeconds, req.cwd, opts, emit);
+      const result = await this.attempt(agent, prompt, timeoutSeconds, req.cwd, opts, emit, fallbacks.length);
       last = { ...result, routedBy: decision.routedBy, fallbacks };
 
       if (result.cancelled) return last;
@@ -188,7 +191,7 @@ export class Gateway {
 
   private async attempt(
     agent: AgentId, prompt: string, timeoutSeconds: number, cwd: string | undefined,
-    opts: RunOptions, emit: (e: ProgressEvent) => void,
+    opts: RunOptions, emit: (e: ProgressEvent) => void, fallbackCount: number,
   ): Promise<RunResult & { rateLimited?: boolean; cancelled?: boolean }> {
     const adapter = getAdapter(agent);
     const binary = this.binaryFor(agent);
@@ -222,6 +225,8 @@ export class Gateway {
     this.ledger.record({
       ts: finished, agent, tokens: result.usage.totalTokens, ok: result.ok, estimated: result.usage.estimated,
       ...(result.rateLimited ? { rateLimited: true } : {}),
+      durationMs: result.durationMs,
+      ...(fallbackCount > 0 ? { fallbacks: fallbackCount } : {}),
     }, finished);
     return result;
   }

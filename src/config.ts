@@ -77,7 +77,11 @@ export function mergeConfig(raw: unknown, baseDir: string): StitchworkConfig {
         if (typeof value.enabled !== 'boolean') throw new ConfigError(`${p}.enabled must be a boolean`);
         a.enabled = value.enabled;
       }
-      if (value.binary !== undefined) a.binary = str(value.binary, `${p}.binary`);
+      if (value.binary !== undefined) {
+        const b = str(value.binary, `${p}.binary`);
+        // a path like examples/fake-agents/claude is relative to the base dir; a bare name is looked up on PATH
+        a.binary = /[\\/]/.test(b) ? resolve(baseDir, b) : b;
+      }
       if (value.extraArgs !== undefined) {
         if (!Array.isArray(value.extraArgs) || !value.extraArgs.every((x) => typeof x === 'string')) {
           throw new ConfigError(`${p}.extraArgs must be an array of strings`);

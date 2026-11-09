@@ -23,6 +23,7 @@ src/
   doctor.ts        `stitchwork doctor` health check
   demo.ts          `stitchwork demo` scripted scenario on the bundled stand-in agents
   mcp/             JSON-RPC framing + MCP server and tool definitions
+  lab/             `stitchwork lab`: loopback HTTP server, guard, read-only API, launcher, page (inline CSS+JS)
   cli.ts           `stitchwork` entry point
 skills/            built-in reusable skills (*.md)
 examples/          fake-agents/ stand-in CLIs (honour STITCHWORK_FAKE_RATE_LIMIT) + demo config

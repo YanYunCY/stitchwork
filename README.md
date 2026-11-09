@@ -44,7 +44,25 @@ If you pay for more than one coding agent, you juggle four CLIs, four logins and
 - **Rate-limit failover**: a `429` / "usage limit" / `RESOURCE_EXHAUSTED` failure on an auto run is retried on the next agent (up to `maxFallbacks`, default 2); the limited agent cools down for `cooldownMinutes` (default 15), persisted in the ledger. Explicit runs never fail over.
 - **Progress and cancellation**: `notifications/progress` when the client sends a `progressToken`; `notifications/cancelled` kills the child process.
 - **Skills**: `skills/*.md` with `name`, `description`, `agents`, `timeoutSeconds` and an `{{input}}` template.
-- **CLI**: `stitchwork serve | agents | quota | skills | run | doctor | demo`.
+- **The lab**: `stitchwork lab` serves a local web dashboard (an operating table with live quota gauges, recent runs and a skill launcher).
+- **CLI**: `stitchwork serve | agents | quota | skills | run | doctor | demo | lab`.
+
+### The lab
+
+```bash
+stitchwork lab [--port 7777] [--open] [--read-only]
+# no install? from a clone, against the bundled stand-in agents:
+node bin/stitchwork.js lab --config examples/demo.config.json --open
+```
+
+Each agent is a stitched limb with a glass-tube gauge for tokens and for requests (green, amber under 30% left, red under 10%), its reset time, a "stitches healing" badge with a countdown while it cools down, and a dimmed state when it is disabled or not installed. Below sit the last 20 runs from the ledger (one row per attempt, `~` for estimated tokens, 🧵 for failover or a rate limit) and a skill launcher with Run and Cancel. The page refreshes every 2 seconds and says so when the server stops answering.
+
+- **Local only.** It binds to `127.0.0.1` (there is no `--host`), answers 403 to any `Host` that is not `127.0.0.1:<port>` or `localhost:<port>` (DNS rebinding), and answers 403 to a `POST` from another origin.
+- **Read-only until you click Run.** The only thing that can spend quota is `POST /api/launch`. It goes through the same gateway as MCP and the CLI (routing, quota checks, failover), allows one launch at a time (409 otherwise), and is aborted by Cancel or by closing the tab. `--read-only` turns the launcher off (403) and hides it.
+- **Self-contained.** One HTML document with inline CSS and JS, built on `node:http`: no remote fonts, scripts or images, no dependency, and unknown paths never touch the filesystem.
+- **Nothing sensitive.** Runs show counts and timings only; prompts, outputs and environment values are never in the ledger or the run list (a launch response returns the output to the tab that asked for it).
+
+Spec: [`m3-lab`](./.kiro/specs/m3-lab) (Requirements 15–19, properties P7–P12).
 
 ### MCP tools
 
@@ -116,7 +134,7 @@ npm test                  # unit, property-based (fast-check), end-to-end MCP, r
 
 ### Built with Kiro
 
-How the specs, steering, hooks, MCP and property tests were used: [`docs/KIRO_USAGE.md`](./docs/KIRO_USAGE.md). Specs: [`mvp-gateway`](./.kiro/specs/mvp-gateway), [`m2-demo-ready`](./.kiro/specs/m2-demo-ready). Roadmap: [`docs/MILESTONES.md`](./docs/MILESTONES.md).
+How the specs, steering, hooks, MCP and property tests were used: [`docs/KIRO_USAGE.md`](./docs/KIRO_USAGE.md). Specs: [`mvp-gateway`](./.kiro/specs/mvp-gateway), [`m2-demo-ready`](./.kiro/specs/m2-demo-ready), [`m3-real-clis`](./.kiro/specs/m3-real-clis), [`m3-lab`](./.kiro/specs/m3-lab). Roadmap: [`docs/MILESTONES.md`](./docs/MILESTONES.md).
 
 ### Status and limits
 
@@ -162,7 +180,25 @@ node bin/stitchwork.js demo        # Node 22.18+，无需安装依赖
 - **限流自动转派**：`auto` 运行遇到 `429`、"usage limit"、`RESOURCE_EXHAUSTED` 等失败时，换下一个 agent 重试（最多 `maxFallbacks` 次，默认 2）；被限流的 agent 冷却 `cooldownMinutes`（默认 15 分钟），冷却状态写在账本里，跨进程有效。指定 agent 的运行不会转派。
 - **进度与取消**：客户端带 `progressToken` 时发送 `notifications/progress`；收到 `notifications/cancelled` 时结束子进程。
 - **Skills**：`skills/*.md`，含 `name`、`description`、`agents`、`timeoutSeconds` 与 `{{input}}` 模板。
-- **命令行**：`stitchwork serve | agents | quota | skills | run | doctor | demo`。
+- **实验室**：`stitchwork lab` 在本机启动网页仪表盘（手术台主题：实时配额仪表、最近运行、skill 启动器）。
+- **命令行**：`stitchwork serve | agents | quota | skills | run | doctor | demo | lab`。
+
+### 实验室
+
+```bash
+stitchwork lab [--port 7777] [--open] [--read-only]
+# 不想安装？在仓库里用自带的模拟 agent：
+node bin/stitchwork.js lab --config examples/demo.config.json --open
+```
+
+每个 agent 是一条缝合的"肢体"：token 与请求各有一根玻璃管仪表（剩余低于 30% 变琥珀色，低于 10% 变红），显示重置时间；冷却期间显示"伤口愈合中"徽章和倒计时；被禁用或未安装时变暗并说明原因。下方是账本里最近 20 次运行（每次尝试一行，估算 token 前加 `~`，转派或限流标 🧵），以及带"运行/取消"按钮的 skill 启动器。页面每 2 秒刷新，服务器无响应时会明确提示"已断开"。
+
+- **仅限本机**：只监听 `127.0.0.1`（没有 `--host` 选项）；`Host` 不是 `127.0.0.1:<端口>` 或 `localhost:<端口>` 时返回 403（防 DNS 重绑定）；来自其他来源的 `POST` 也返回 403。
+- **不点"运行"就只读**：唯一会消耗额度的是 `POST /api/launch`，它和 MCP、命令行走同一个网关（路由、配额检查、转派），同一时间只允许一个任务（再来一个返回 409），点"取消"或关闭标签页会中止任务。`--read-only` 会关闭并隐藏启动器（返回 403）。
+- **自包含**：基于 `node:http` 的单个 HTML 页面，内联 CSS 与 JS，不加载任何远程字体、脚本或图片，也没有新增依赖；未知路径不会读取文件系统。
+- **不含敏感信息**：运行记录只有计数和耗时，提示词、输出和环境变量不会出现在账本或运行列表里（启动任务的响应只把输出返回给发起请求的那个标签页）。
+
+规格见 [`m3-lab`](./.kiro/specs/m3-lab)（需求 15–19，性质 P7–P12）。
 
 ### 安装与接入
 

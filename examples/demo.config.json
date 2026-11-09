@@ -2,9 +2,9 @@
   "windowMinutes": 60,
   "ledgerPath": ".stitchwork/demo-ledger.jsonl",
   "agents": {
-    "claude":   { "limits": { "tokens": 3000, "requests": 2 } },
-    "codex":    { "limits": { "tokens": 6000 } },
-    "gemini":   { "limits": { "requests": 10 } },
-    "opencode": { "limits": { "requests": 10 } }
+    "claude":   { "binary": "examples/fake-agents/claude",   "limits": { "tokens": 3000, "requests": 2 } },
+    "codex":    { "binary": "examples/fake-agents/codex",    "limits": { "tokens": 6000 } },
+    "gemini":   { "binary": "examples/fake-agents/gemini",   "limits": { "requests": 10 } },
+    "opencode": { "binary": "examples/fake-agents/opencode", "limits": { "requests": 10 } }
   }
 }

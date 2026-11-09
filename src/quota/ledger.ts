@@ -12,6 +12,10 @@ export interface UsageEvent {
   estimated: boolean;
   /** set only when the run hit a vendor rate limit (Req 8.1) */
   rateLimited?: boolean;
+  /** wall time of the attempt in whole milliseconds, when known (Req 17.2) */
+  durationMs?: number;
+  /** attempts abandoned earlier in the same request; omitted at 0 (Req 17.2) */
+  fallbacks?: number;
 }
 
 export interface QuotaSnapshot {
@@ -49,6 +53,27 @@ export function fileStore(path: string): LedgerStore {
   };
 }
 
+const wholeNonNegative = (v: unknown): number | undefined =>
+  typeof v === 'number' && Number.isFinite(v) && v >= 0 ? Math.round(v) : undefined;
+
+/** Copy the optional fields onto `e` only when valid; `fallbacks` only when > 0 (Req 17.2). */
+function applyOptional(e: UsageEvent, src: { rateLimited?: unknown; durationMs?: unknown; fallbacks?: unknown }): UsageEvent {
+  if (src.rateLimited === true) e.rateLimited = true;
+  const d = wholeNonNegative(src.durationMs);
+  if (d !== undefined) e.durationMs = d;
+  const f = wholeNonNegative(src.fallbacks);
+  if (f !== undefined && f > 0) e.fallbacks = f;
+  return e;
+}
+
+/** The exact object that is serialised to the ledger: counts only (Req 3.8, 17.5). */
+export function cleanEvent(event: UsageEvent): UsageEvent {
+  return applyOptional({
+    ts: event.ts, agent: event.agent, tokens: Math.max(0, Math.round(event.tokens)),
+    ok: event.ok, estimated: event.estimated,
+  }, event);
+}
+
 export function parseEvent(line: string): UsageEvent | undefined {
   if (!line.trim()) return undefined;
   try {
@@ -58,8 +83,7 @@ export function parseEvent(line: string): UsageEvent | undefined {
       typeof v.tokens === 'number' && Number.isFinite(v.tokens) && v.tokens >= 0
     ) {
       const e: UsageEvent = { ts: v.ts, agent: v.agent, tokens: v.tokens, ok: v.ok !== false, estimated: v.estimated === true };
-      if (v.rateLimited === true) e.rateLimited = true;
-      return e;
+      return applyOptional(e, v);
     }
   } catch {
     /* malformed lines are ignored (Req 3.3) */
@@ -95,11 +119,7 @@ export class QuotaLedger {
   }
 
   record(event: UsageEvent, now: number = event.ts): void {
-    const clean: UsageEvent = {
-      ts: event.ts, agent: event.agent, tokens: Math.max(0, Math.round(event.tokens)),
-      ok: event.ok, estimated: event.estimated,
-    };
-    if (event.rateLimited) clean.rateLimited = true;
+    const clean = cleanEvent(event);
     this.store.append(JSON.stringify(clean));
     this.events.push(clean);
     this.events.sort((a, b) => a.ts - b.ts);

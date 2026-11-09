@@ -26,7 +26,7 @@ An open-source control plane that stitches Codex CLI, Claude Code, Gemini CLI an
 
 ## Out of scope for now
 - Done in M2: progress notifications, cancellation, rate-limit failover.
-- A web dashboard (`stitchwork lab`, milestone 3).
+- Done in M3: the local web dashboard (`stitchwork lab`).
 - Remote/HTTP transport and multi-user auth.
 - Reading vendor billing APIs for exact quota; Stitchwork tracks what passes through the gateway.
 

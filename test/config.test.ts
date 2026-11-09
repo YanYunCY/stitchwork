@@ -62,3 +62,12 @@ describe('M2 config fields (Req 8.2, 8.3)', () => {
     assert.throws(() => mergeConfig({ cooldownMinutes: 0 }, '/tmp'), /cooldownMinutes must be a positive number/);
   });
 });
+
+describe('binary paths', () => {
+  it('resolves a path against the base dir and leaves a bare name for PATH lookup', () => {
+    const c = mergeConfig({ agents: { claude: { binary: 'tools/claude' }, codex: { binary: 'codex' }, gemini: { binary: '/opt/gemini' } } }, base);
+    assert.equal(c.agents.claude.binary, join(base, 'tools', 'claude'));
+    assert.equal(c.agents.codex.binary, 'codex');
+    assert.equal(c.agents.gemini.binary, '/opt/gemini');
+  });
+});
