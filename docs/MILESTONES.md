@@ -14,7 +14,8 @@ Submission deadline: **2026-12-04 14:00 PT** (2026-12-05 06:00 China time). Date
 - Spec: `.kiro/specs/m2-demo-ready` (Requirements 8–13, properties P5–P6). 123 tests green.
 
 ## M3 — Real CLIs and the lab (target 2026-11-24)
-- Verify every adapter against the current real CLIs and record fixtures from real output (needs the CLIs signed in on a real machine).
+- ✅ 2026-11-09: adapters verified against Codex 0.167.0, Claude Code 2.1.319, Gemini CLI 0.67.0 (flags and errors) and OpenCode 1.19.5; real-output fixtures in `test/fixtures/real/`; spec `.kiro/specs/m3-real-clis` (Requirement 14). Found and fixed: Codex token count never parsed, Gemini headless trust error, OpenCode usage now reported.
+- Still open: a successful Gemini run and a real rate-limit response.
 - `stitchwork lab`: a small local web UI in an "operating table" theme with each agent as a limb, live quota gauges, recent runs and a skill launcher. This is the Design score.
 - Optional quota import from local CLI usage files, so usage made outside the gateway counts.
 - Build this milestone's spec (`.kiro/specs/lab-dashboard/`) inside Kiro from the first prompt, and keep screenshots.

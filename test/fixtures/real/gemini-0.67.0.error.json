@@ -1,0 +1,8 @@
+{
+  "session_id": "redacted",
+  "error": {
+    "type": "Error",
+    "message": "{\"error\":{\"message\":\"{\\n  \\\"error\\\": {\\n    \\\"code\\\": 403,\\n    \\\"message\\\": \\\"Request had insufficient authentication scopes.\\\",\\n    \\\"status\\\": \\\"PERMISSION_DENIED\\\",\\n    \\\"details\\\": [\\n      {\\n        \\\"@type\\\": \\\"type.googleapis.com/google.rpc.ErrorInfo\\\",\\n        \\\"reason\\\": \\\"ACCESS_TOKEN_SCOPE_INSUFFICIENT\\\",\\n        \\\"metadata\\\": {\\n          \\\"method\\\": \\\"google.ai.generativelanguage.v1beta.GenerativeService.StreamGenerateContent\\\",\\n          \\\"service\\\": \\\"generativelanguage.googleapis.com\\\"\\n        }\\n      }\\n    ]\\n  }\\n}\\n\",\"code\":403,\"status\":\"Forbidden\"}}",
+    "code": 403
+  }
+}

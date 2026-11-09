@@ -58,6 +58,17 @@ If you pay for more than one coding agent, you juggle four CLIs, four logins and
 
 Every run returns `agent`, `ok`, `output`, `usage { inputTokens, outputTokens, totalTokens, estimated }`, `durationMs`, `exitCode`, `routedBy` and `fallbacks` as structured content.
 
+### Verified CLI versions
+
+Each adapter was run against the real CLI on 2026-11-09; the raw output is kept in [`test/fixtures/real/`](./test/fixtures/real) and parsed by the tests.
+
+| Agent | Version | Invocation | Usage |
+| --- | --- | --- | --- |
+| Codex CLI | 0.167.0 | `codex exec --skip-git-repo-check --json` | reported (`turn.completed.usage`) |
+| Claude Code | 2.1.319 | `claude -p --output-format json` | reported (`usage`) |
+| Gemini CLI | 0.67.0 | `gemini -p --output-format json --skip-trust` | flags and error format verified; a successful run was not recorded |
+| OpenCode | 1.19.5 | `opencode run --format json` | reported (`step_finish.tokens`) |
+
 ### Install and connect
 
 Requires **Node.js 22.18+** and at least one agent CLI installed and signed in.
@@ -109,7 +120,7 @@ How the specs, steering, hooks, MCP and property tests were used: [`docs/KIRO_US
 
 ### Status and limits
 
-- Adapter flags and output parsing follow each CLI's documented non-interactive mode; they have not yet been checked against every current CLI release (tracked in the milestones).
+- Adapters were verified against Codex CLI 0.167.0, Claude Code 2.1.319, Gemini CLI 0.67.0 and OpenCode 1.19.5 (see the table above). A successful Gemini run and real vendor rate-limit responses have not been recorded yet; newer CLI releases may change their output.
 - Quota is what Stitchwork has seen. Usage you make outside the gateway is not counted yet.
 
 ### License
@@ -170,7 +181,7 @@ stitchwork doctor            # 检查哪些 CLI 在 PATH 上、版本和额度�
 
 ### 现状与限制
 
-- 适配器的参数和输出解析按各 CLI 文档中的非交互模式实现，尚未逐一对照所有最新版本验证。
+- 适配器已对照 Codex CLI 0.167.0、Claude Code 2.1.319、Gemini CLI 0.67.0、OpenCode 1.19.5 实测（原始输出见 `test/fixtures/real/`）。Gemini 成功响应和各家真实限流响应尚未录到，CLI 新版本可能改变输出格式。
 - 配额只统计经过 Stitchwork 的用量，网关之外的用量暂不计入。
 
 ### 许可证

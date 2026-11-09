@@ -6,7 +6,7 @@
 
 | Kiro feature | Where | What it does for this project |
 | --- | --- | --- |
-| Spec-driven development | `.kiro/specs/mvp-gateway/`, `.kiro/specs/m2-demo-ready/` | 13 EARS requirements, design with correctness properties P1–P6, task lists whose ids appear in commit messages |
+| Spec-driven development | `.kiro/specs/mvp-gateway/`, `.kiro/specs/m2-demo-ready/`, `.kiro/specs/m3-real-clis/` | 14 EARS requirements, design with correctness properties P1–P6, task lists whose ids appear in commit messages |
 | Steering | `.kiro/steering/{product,tech,structure}.md` | Pins the product scope, the zero-dependency TypeScript rules and the one-file-per-concept layout |
 | Agent hooks | `.kiro/hooks/*.kiro.hook` (4) | Tests on save, adapter checklist, spec sync, ledger privacy guard |
 | MCP | `.kiro/settings/mcp.json` | Registers Stitchwork itself, so Kiro can hand sub-tasks to Codex, Claude Code, Gemini CLI or OpenCode |
@@ -14,10 +14,11 @@
 
 ## Spec-driven development
 
-Two specs, each with `requirements.md` (EARS: `WHEN`, `WHILE`, `IF … THEN`, `WHERE`), `design.md` and `tasks.md`.
+Three specs, each with `requirements.md` (EARS: `WHEN`, `WHILE`, `IF … THEN`, `WHERE`), `design.md` and `tasks.md`.
 
 - **`mvp-gateway`** (Requirements 1–7): unified agent interface, MCP server, shared quota ledger, router, skills, configuration and secrets, CLI. Design defines invariants P1–P4.
 - **`m2-demo-ready`** (Requirements 8–13, numbering continues on purpose): rate-limit failover with a persisted cooldown, progress notifications, cancellation, `doctor`, a self-contained `demo`, and an installable build. Design adds P5 (cooldown) and P6 (failover bound).
+- **`m3-real-clis`** (Requirement 14): what changed after running each real CLI, with the raw output kept as test fixtures.
 
 Every commit names its task, e.g. `feat(gateway): rate-limit failover, progress events and cancellation with property P6 (task M2.5)`, so `git log` reads as the task list being worked through.
 

@@ -58,3 +58,19 @@ export function num(value: unknown): number {
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
+
+/** Parse newline-delimited JSON, skipping banner or non-JSON lines. */
+export function parseJsonLines(text: string): Record<string, unknown>[] {
+  const out: Record<string, unknown>[] = [];
+  for (const line of text.split('\n')) {
+    const t = line.trim();
+    if (!t.startsWith('{')) continue;
+    try {
+      const v: unknown = JSON.parse(t);
+      if (isRecord(v)) out.push(v);
+    } catch {
+      /* not JSON */
+    }
+  }
+  return out;
+}

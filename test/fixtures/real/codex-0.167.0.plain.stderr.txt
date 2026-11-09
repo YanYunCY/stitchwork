@@ -1,0 +1,18 @@
+Reading additional input from stdin...
+OpenAI Codex v0.167.0
+--------
+workdir: /tmp/scratch
+model: gpt-5-mini
+provider: oa
+approval: never
+sandbox: read-only
+reasoning effort: none
+reasoning summaries: none
+session id: <redacted>
+--------
+user
+Reply with exactly: pong
+codex
+pong
+tokens used
+11,661

@@ -80,7 +80,7 @@ describe('gemini adapter', () => {
 describe('codex adapter', () => {
   const a = getAdapter('codex');
   it('puts the prompt last after exec flags', () => {
-    assert.deepEqual(a.buildArgs('p', ['-m', 'gpt']), ['exec', '--skip-git-repo-check', '-m', 'gpt', 'p']);
+    assert.deepEqual(a.buildArgs('p', ['-m', 'gpt']), ['exec', '--skip-git-repo-check', '--json', '-m', 'gpt', 'p']);
   });
   it('parses a "tokens used" line and strips it from output', () => {
     const r = a.parse('Here is the fix.\ntokens used: 1,234\n', '', 'abcdefgh');
@@ -98,9 +98,9 @@ describe('codex adapter', () => {
 });
 
 describe('opencode adapter', () => {
-  it('runs `opencode run` and always estimates', () => {
+  it('runs `opencode run --format json` and estimates plain output', () => {
     const a = getAdapter('opencode');
-    assert.deepEqual(a.buildArgs('p', []), ['run', 'p']);
+    assert.deepEqual(a.buildArgs('p', []), ['run', '--format', 'json', 'p']);
     const r = a.parse('  out \n', '', 'p');
     assert.equal(r.output, 'out');
     assert.equal(r.usage.estimated, true);
